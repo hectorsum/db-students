@@ -103,21 +103,22 @@ class student:
         ttk.Button(win,text="Editar",command=self.update_student).grid(row=3,column=4,sticky=tk.W+tk.E)
         ttk.Button(win,text="Eliminar",command=self.delete_student).grid(row=4,column=4,sticky=tk.W+tk.E)
 
-        ############## SELECTION ################
-        #if(self.cboCarrera['values']=="Ing.Sistemas"):
-            #self.facultad.configure(text="Ingenieria")
+        
     
     def news_election(self,event):
         response=str(event.widget.get())
         if response.startswith("Ing."):
             self.facultad.delete(0,tk.END)            
             self.facultad.insert(0,"Ingenieria")
+            #self.new_faculty.insert(0,"Ingenieria")
         elif response.startswith("Arquitectura"):            
             self.facultad.delete(0,tk.END)
             self.facultad.insert(0,"Arquitectura")
+            #self.new_faculty.insert(0,"Arquitectura")
         elif response.startswith("Periodismo"):
             self.facultad.delete(0,tk.END)
             self.facultad.insert(0,"Comunicaciones")
+            #self.new_faculty.insert(0,"Comunicaciones")
         #print('selected:', event.widget.get())
 
     def unlocking_boxes(self):                            
@@ -201,12 +202,12 @@ class student:
     #     print(student)
 
     def update_student(self):
-    
+        
         row = self.tree.item(self.tree.selection())['text']
         old_name = self.tree.item(self.tree.selection())['values'][0]
         old_lastname = self.tree.item(self.tree.selection())['values'][1]
         old_dni = self.tree.item(self.tree.selection())['values'][2]
-        old_datebirth = self.tree.item(self.tree.selection())['values'][3]
+        old_fec_nac = self.tree.item(self.tree.selection())['values'][3]
         old_career = self.tree.item(self.tree.selection())['values'][4]
         old_faculty = self.tree.item(self.tree.selection())['values'][5]
         old_term = self.tree.item(self.tree.selection())['values'][6]
@@ -221,7 +222,7 @@ class student:
         tk.Label(self.edit_wind,text="Old DNI: ").grid(row=2,column=1)
         tk.Entry(self.edit_wind,textvariable=tk.StringVar(self.edit_wind,value=old_dni),state="readonly").grid(row=2,column=2)
         tk.Label(self.edit_wind,text="Old Birth Date: ").grid(row=3,column=1)
-        tk.Entry(self.edit_wind,textvariable=tk.StringVar(self.edit_wind,value=old_datebirth),state="readonly").grid(row=3,column=2)
+        tk.Entry(self.edit_wind,textvariable=tk.StringVar(self.edit_wind,value=old_fec_nac),state="readonly").grid(row=3,column=2)
         tk.Label(self.edit_wind,text="Old Career: ").grid(row=4,column=1)
         tk.Entry(self.edit_wind,textvariable=tk.StringVar(self.edit_wind,value=old_career),state="readonly").grid(row=4,column=2)
         tk.Label(self.edit_wind,text="Old Faculty: ").grid(row=5,column=1)
@@ -245,8 +246,8 @@ class student:
         tk.Label(self.edit_wind,text="New Fec.Nac: ").grid(row=3,column=3)
         new_fec_nac = DateEntry(self.edit_wind,width=17,background='darkblue', foreground='white', borderwidth=2,date_pattern="dd/MM/yyyy")        
         new_fec_nac.grid(row=3, column=4)
-        #######
-        def news_election(self,event):
+    
+        def news_election_edit(event):
             response=str(event.widget.get())
             if response.startswith("Ing."):
                 new_faculty.delete(0,tk.END)            
@@ -257,12 +258,13 @@ class student:
             elif response.startswith("Periodismo"):
                 new_faculty.delete(0,tk.END)
                 new_faculty.insert(0,"Comunicaciones")
+
         #######
         tk.Label(self.edit_wind,text="New Career: ").grid(row=4,column=3)
-        new_career = ttk.Combobox(self.edit_wind,width=17,values=('Ing.Sistemas','Ing.Mecatronica','Ing.Civil','Arquitectura','Periodismo'))
+        new_career = ttk.Combobox(self.edit_wind,width=17,values=('Select...','Ing.Sistemas','Ing.Mecatronica','Ing.Civil','Arquitectura','Periodismo'))
         new_career.current(0)
         new_career.grid(row=4,column=4)
-        new_career.bind("<<ComboboxSelected>>", self.news_election)
+        new_career.bind("<<ComboboxSelected>>", news_election_edit)
         #######
         tk.Label(self.edit_wind,text="New Faculty: ").grid(row=5,column=3)
         new_faculty = tk.Entry(self.edit_wind,bg="#cdcdcd")
@@ -273,8 +275,8 @@ class student:
         new_term.grid(row=6,column=4)
                 
         ####### BUTTONS #######
-        tk.Button(self.edit_wind,text="Save").grid(row=7,column=0,columnspan=3,sticky=tk.E+tk.W)
-        tk.Button(self.edit_wind,text="Cancel").grid(row=7,column=3,columnspan=2,sticky=tk.E+tk.W)
+        tk.Button(self.edit_wind,text="Save",command=lambda:self.edit_records(new_name.get(),old_name,new_lastname.get(),old_lastname,new_dni.get(),old_dni,new_fec_nac.get_date(),old_fec_nac,new_career.get(),old_career,new_faculty.get(),old_faculty,new_term.get(),old_term)).grid(row=7,column=0,columnspan=3,sticky=tk.E+tk.W)
+        tk.Button(self.edit_wind,text="Cancel",command=lambda:self.edit_wind.destroy()).grid(row=7,column=3,columnspan=2,sticky=tk.E+tk.W)
         # sql = f"UPDATE ESTUDIANTE SET dni={dni} WHERE id_est={cod}"
         # try:
         #     myCursor.execute(sql)
@@ -283,7 +285,13 @@ class student:
         #     listStudents()
         # except Exception as e:
         #     print(e)
-
+    def edit_records(self,new_name,nombres,new_lastname,apell,new_dni,dni,new_fec_nac,fech_nac,new_career,carrera,new_faculty,facultad,new_term,ciclo):
+        sql = "UPDATE ESTUDIANTE SET nombres = ?,apell = ?,dni = ?, fech_nac = ?, carrera = ?, facultad = ?, ciclo = ? WHERE nombres = ? AND apell = ? AND dni = ? AND fech_nac = ? AND carrera = ? AND facultad = ? AND ciclo = ?"
+        parameters = (new_name,new_lastname,new_dni,new_fec_nac,new_career,new_faculty,new_term,nombres,apell,dni,fech_nac,carrera,facultad,ciclo)
+        self.run_query(sql,parameters)
+        self.edit_wind.destroy()
+        tk.messagebox.showinfo(title=None,message="Student updated successfully")
+        self.list_students()
     def delete_student(self):        
         try: 
             row = self.tree.item(self.tree.selection())['text']
